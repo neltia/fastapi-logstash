@@ -1,14 +1,14 @@
 import platform
 import logging
-import logstash
+from logstash_async.handler import AsynchronousLogstashHandler
 
 
 def get_logger(logger_name):
     os_system = platform.system()
     # windows면 로그 파일에 기록
-    print(os_system)
     if os_system.lower() == "windows":
-        return create_logger_test(logger_name)
+        # return create_logger_test(logger_name)
+        return create_logger_logstash(logger_name)
     # 구성된 ELK 환경에 전송
     else:
         return create_logger_logstash(logger_name)
@@ -45,5 +45,6 @@ def create_logger_logstash(logger_name):
     logger.addHandler(console)
 
     # Logstash에 TCP 전송 이벤트 설정
-    logger.addHandler(logstash.TCPLogstashHandler('logstash', 5044, version=1))
+    async_handler = AsynchronousLogstashHandler(host='127.0.0.1', port=5044, database_path=None)
+    logger.addHandler(async_handler)
     return logger
