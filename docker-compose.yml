@@ -185,20 +185,20 @@ services:
 
   logstash:
     image: docker.elastic.co/logstash/logstash:${STACK_VERSION}
+    user: root
     volumes:
       - certs:/usr/share/logstash/config/certs
-      - ./setup/logstash:/usr/share/logstash/pipeline
+      - logstashdata:/usr/share/logstash/config
     environment:
+      - ELASTICSEARCH_USER=elastic
       - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
-      - xpack.monitoring.elasticsearch.hosts=https://es01:9200
-      - xpack.monitoring.elasticsearch.username=elastic
-      - xpack.monitoring.elasticsearch.password=${ELASTIC_PASSWORD}
+      - "LS_JAVA_OPTS=-Xmx256m -Xms256m"
+      - xpack.monitoring.enabled=false
       - xpack.monitoring.elasticsearch.ssl.certificate_authority=/usr/share/logstash/config/certs/ca/ca.crt
     depends_on:
       - es03
     ports:
       - 5044:5044
-    restart: unless-stopped
     command: logstash -f /usr/share/logstash/pipeline/logstash.conf
 
   kibana:
@@ -262,6 +262,8 @@ volumes:
   esdata02:
     driver: local
   esdata03:
+    driver: local
+  logstashdata:
     driver: local
   kibanadata:
     driver: local
